@@ -391,7 +391,7 @@
             const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRec();
             recognition.continuous = true; // Keep listening
-            recognition.interimResults = false; // Only final results
+            recognition.interimResults = true; // CHANGED: Enable Real-time results
             recognition.lang = 'en-US';
 
             recognition.onstart = () => {
@@ -418,12 +418,21 @@
             };
 
             recognition.onresult = (event) => {
-                const last = event.results.length - 1;
-                const transcript = event.results[last][0].transcript.trim().toLowerCase();
+                // CHANGED: We now process results differently for real-time responsiveness
+                let transcript = '';
+                
+                // We check the latest result, whether it is final or interim
+                const latestResult = event.results[event.results.length - 1];
+                if(latestResult) {
+                     transcript = latestResult[0].transcript.trim().toLowerCase();
+                }
                 
                 document.getElementById('last-word').innerText = `Heard: "${transcript}"`;
                 
-                checkSpokenWord(transcript);
+                // We immediately check the word, even if the sentence isn't finished
+                if(transcript) {
+                    checkSpokenWord(transcript);
+                }
             };
         }
 
